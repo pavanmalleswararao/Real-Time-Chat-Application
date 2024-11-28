@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat App</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #chat-room {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .messages {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-room">
+        <div class="messages" id="messages"></div>
+        <input type="text" id="message" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        const socket = io();
+        const roomId = 'room1'; // Example room ID
+        const userId = 'user123'; // Example user ID
+
+        socket.emit('joinRoom', roomId);
+
+        // Handle incoming messages
+        socket.on('receiveMessage', (message) => {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = `${message.senderId}: ${message.text}`;
+            messagesDiv.appendChild(messageDiv);
+        });
+
+        // Handle message history
+        socket.on('messageHistory', (messages) => {
+            const messagesDiv = document.getElementById('messages');
+            messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = `${message.senderId}: ${message.text}`;
+                messagesDiv.appendChild(messageDiv);
+            });
+        });
+
+        function sendMessage() {
+            const text = document.getElementById('message').value;
+            const messageData = {
+                senderId: userId,
+                roomId: roomId,
+                text: text,
+            };
+
+            socket.emit('sendMessage', messageData);
+            document.getElementById('message').value = '';
+        }
+    </script>
+</body>
+</html>
